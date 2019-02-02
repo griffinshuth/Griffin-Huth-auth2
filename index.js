@@ -15,7 +15,7 @@ server.get('/', (req, res) => {
   res.send('Its Alive!');
 });
 
-server.post('/register', (req, res) => {
+server.post('/api/register', (req, res) => {
     const credentials = req.body;
     const hash = bcrypt.hashSync(credentials.password, 14);
     credentials.password = hash;
@@ -43,7 +43,7 @@ function generateToken(user){
     return jwt.sign(jwtPayload, jwtSecret, jwtOptions)
 }
 
-server.post('/login', (req, res) => {
+server.post('/api/login', (req, res) => {
     const creds = req.body;
     db('users')
     .where({
@@ -51,6 +51,7 @@ server.post('/login', (req, res) => {
     })
     .first()
 .then(user => {
+  console.log(user);
   if(user && bcrypt.compareSync(creds.password, user.password)) {
 const token = generateToken(user);
     // found the user
@@ -65,7 +66,7 @@ res.status(200).json({ welcome: user.username, token });
 });
 
 // protect this route, only authenticated users should see it
-server.get('/users', protected, (req, res) => {
+server.get('/api/users', protected, (req, res) => {
   // only if the device is logged in 
   console.log('\n** decoded token information **\n', req.decodedToken);
      db('users')
@@ -79,7 +80,7 @@ server.get('/users', protected, (req, res) => {
 
   function protected(req, res, next){
     const token = req.headers.authorization;
-
+console.log(token)
     if(token){
     jwt.verify(token, jwtSecret, (err, decodedToken) => {
       if(err){
